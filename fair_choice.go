@@ -3,24 +3,45 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/rand"
+	"sort"
+	"time"
 )
 
 func main() {
+	rand.Seed(time.Now().Unix())
 	algorithms := []algorithm{basic{}, byTwo{}, recursive{}}
-	fmt.Printf("numPlayers,basic,byTwo,recursive,\n")
-	for numPlayers := 1; numPlayers <= 100; numPlayers++ {
-		fmt.Printf("%v,", numPlayers)
-		for _, a := range algorithms {
-			fmt.Printf("%v,", diff(numPlayers, a))
+	total := make([]int, 3, 3)
+	for execution := 0; execution <= 10000; execution++ {
+		for numPlayers := 5; numPlayers <= 5; numPlayers++ {
+			players := makePlayers(numPlayers)
+			for i, a := range algorithms {
+				d := diff(players, numPlayers, a)
+				if d < 0 {
+					d *= -1
+				}
+				total[i] += d
+			}
 		}
-		fmt.Printf("\n")
+	}
+	for _, t := range total {
+		fmt.Println(t)
 	}
 }
 
-func diff(numPlayers int, a algorithm) int {
+func makePlayers(numPlayers int) []int {
+	var players []int
+	for i := 0; i < numPlayers * 2; i++ {
+		players = append(players, rand.Int() % 1000)
+	}
+	sort.Ints(players)
+	return players
+}
+
+func diff(players []int, numPlayers int, a algorithm) int {
 	score := make(map[bool]int)
 	for i, choice := range a.choose(numPlayers) {
-		score[choice] += i
+		score[choice] += players[i] * players[i] * players[i]
 	}
 	return score[false] - score[true]
 }
